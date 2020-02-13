@@ -2,7 +2,9 @@ exports.login = function() {};
 
 exports.logout = function() {};
 
-exports.register = function() {};
+exports.register = (req, res) => {
+  res.send('Thanks for trying to register');
+};
 
 exports.home = function(req, res) {
   res.render('home-guest');
