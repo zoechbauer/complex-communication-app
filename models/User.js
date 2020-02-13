@@ -1,4 +1,6 @@
 const validator = require('validator');
+const usersCollection = require('../db').collection('users');
+const minPwLen = 4; // for testing
 
 let User = function(data) {
   this.data = data;
@@ -45,8 +47,8 @@ User.prototype.validate = function() {
   if (this.data.username.length > 0 && this.data.username.length < 3) {
     this.errors.push('Username must be at least 3 characters');
   }
-  if (this.data.password.length > 0 && this.data.password.length < 12) {
-    this.errors.push('Password must be at least 12 characters');
+  if (this.data.password.length > 0 && this.data.password.length < minPwLen) {
+    this.errors.push(`Password must be at least ${minPwLen} characters`);
   }
 
   if (this.data.username.length > 30) {
@@ -63,6 +65,10 @@ User.prototype.register = function() {
   this.validate();
 
   // step #2: if there are no validation errors then store user data in database
+  if (!this.errors.length) {
+    console.log('insertOne', this.data);
+    usersCollection.insertOne(this.data);
+  }
 };
 
 module.exports = User;
