@@ -14,6 +14,7 @@ docs/
 .tmp/
 
 # OS or Editor folders
+.env
 .DS_Store
 Thumbs.db
 .cache
