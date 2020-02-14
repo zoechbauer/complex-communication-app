@@ -4,7 +4,13 @@ exports.login = function(req, res) {
   let user = new User(req.body);
   user
     .login()
-    .then(result => res.send(result))
+    .then(result => {
+      req.session.user = {
+        favColor: 'blue',
+        username: user.data.username
+      };
+      res.send(result);
+    })
     .catch(err => res.send(err));
 };
 
@@ -21,5 +27,10 @@ exports.register = (req, res) => {
 };
 
 exports.home = function(req, res) {
-  res.render('home-guest');
+  console.log('req.session.user', req.session.user);
+  if (req.session.user) {
+    res.send('Welcome to the actual application!!');
+  } else {
+    res.render('home-guest');
+  }
 };

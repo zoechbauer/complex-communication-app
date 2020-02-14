@@ -68,6 +68,7 @@ User.prototype.login = function() {
     usersCollection
       .findOne({ username: this.data.username })
       .then(mongoUser => {
+        console.log('mongoUser', mongoUser);
         if (
           mongoUser &&
           bcrypt.compareSync(this.data.password, mongoUser.password)
