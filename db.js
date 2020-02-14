@@ -1,18 +1,17 @@
 const mongodb = require('mongodb');
-
-// TODO replace connectionstring before commit to GitHub
-const connectionString =
-  'mongodb+srv://<user:pw_mustBeReplaced>@<cluster_mustBeReplaced>.mongodb.net/TodoApp?retryWrites=true&w=majority';
+const dotenv = require('dotenv');
+dotenv.config();
 
 mongodb.connect(
-  connectionString,
+  process.env.CONNECTIONSTRING,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true
   },
   (err, client) => {
+    // console.log('process.env.CONNECTIONSTRING', process.env.CONNECTIONSTRING);
     module.exports = client.db();
     const app = require('./app');
-    app.listen(3000);
+    app.listen(process.env.PORT);
   }
 );

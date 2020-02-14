@@ -66,7 +66,8 @@ User.prototype.register = function() {
 
   // step #2: if there are no validation errors then store user data in database
   if (!this.errors.length) {
-    console.log('insertOne', this.data);
+    // console.log('insertOne', this.data);
+    // console.log('usersCollection', usersCollection);
     usersCollection.insertOne(this.data);
   }
 };
