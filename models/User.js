@@ -59,6 +59,21 @@ User.prototype.validate = function() {
   }
 };
 
+User.prototype.login = function() {
+  this.cleanUp();
+
+  usersCollection.findOne(
+    { username: this.data.username },
+    (err, mongoUser) => {
+      if (mongoUser && mongoUser.password == this.data.password) {
+        console.log('congrats, you logged in');
+      } else {
+        console.log('invalid username / password');
+      }
+    }
+  );
+};
+
 User.prototype.register = function() {
   // step #1: validate user data
   this.cleanUp();
