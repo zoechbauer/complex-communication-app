@@ -59,19 +59,21 @@ User.prototype.validate = function() {
   }
 };
 
-User.prototype.login = function(callback) {
-  this.cleanUp();
+User.prototype.login = function() {
+  return new Promise((resolve, reject) => {
+    this.cleanUp();
 
-  usersCollection.findOne(
-    { username: this.data.username },
-    (err, mongoUser) => {
-      if (mongoUser && mongoUser.password == this.data.password) {
-        callback('congrats, you logged in');
-      } else {
-        callback('invalid username / password');
+    usersCollection.findOne(
+      { username: this.data.username },
+      (err, mongoUser) => {
+        if (mongoUser && mongoUser.password == this.data.password) {
+          resolve('congrats, you logged in');
+        } else {
+          reject('invalid username / password');
+        }
       }
-    }
-  );
+    );
+  });
 };
 
 User.prototype.register = function() {
