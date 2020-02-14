@@ -63,16 +63,16 @@ User.prototype.login = function() {
   return new Promise((resolve, reject) => {
     this.cleanUp();
 
-    usersCollection.findOne(
-      { username: this.data.username },
-      (err, mongoUser) => {
+    usersCollection
+      .findOne({ username: this.data.username })
+      .then(mongoUser => {
         if (mongoUser && mongoUser.password == this.data.password) {
           resolve('congrats, you logged in');
         } else {
           reject('invalid username / password');
         }
-      }
-    );
+      })
+      .catch(() => reject('Please try again later'));
   });
 };
 
