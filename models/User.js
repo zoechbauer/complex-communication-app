@@ -1,6 +1,8 @@
 const validator = require('validator');
 const usersCollection = require('../db').collection('users');
+const bcrypt = require('bcryptjs');
 const minPwLen = 4; // for testing
+const maxPwLen = 50; // restricted by bcryptjs
 
 let User = function(data) {
   this.data = data;
@@ -54,8 +56,8 @@ User.prototype.validate = function() {
   if (this.data.username.length > 30) {
     this.errors.push('Username must not exceed 30 characters');
   }
-  if (this.data.password.length > 100) {
-    this.errors.push('Password must not exceed 100 characters');
+  if (this.data.password.length > maxPwLen) {
+    this.errors.push(`Password must not exceed ${maxPwLen} characters`);
   }
 };
 
@@ -66,7 +68,10 @@ User.prototype.login = function() {
     usersCollection
       .findOne({ username: this.data.username })
       .then(mongoUser => {
-        if (mongoUser && mongoUser.password == this.data.password) {
+        if (
+          mongoUser &&
+          bcrypt.compareSync(this.data.password, mongoUser.password)
+        ) {
           resolve('congrats, you logged in');
         } else {
           reject('invalid username / password');
@@ -85,6 +90,10 @@ User.prototype.register = function() {
   if (!this.errors.length) {
     // console.log('insertOne', this.data);
     // console.log('usersCollection', usersCollection);
+
+    // hash password
+    let salt = bcrypt.genSaltSync(10);
+    this.data.password = bcrypt.hashSync(this.data.password, salt);
     usersCollection.insertOne(this.data);
   }
 };
