@@ -2,8 +2,8 @@ const User = require('../models/User');
 
 exports.login = function(req, res) {
   let user = new User(req.body);
-  user.login(callback => {
-    res.send(callback);
+  user.login(result => {
+    res.send(result);
   });
 };
 
