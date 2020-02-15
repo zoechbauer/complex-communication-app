@@ -1,5 +1,7 @@
 const validator = require('validator');
-const usersCollection = require('../db').collection('users');
+const usersCollection = require('../db')
+  .db()
+  .collection('users');
 const bcrypt = require('bcryptjs');
 const minPwLen = 4; // for testing
 const maxPwLen = 50; // restricted by bcryptjs
