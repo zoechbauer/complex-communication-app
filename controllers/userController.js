@@ -33,13 +33,16 @@ exports.logout = function(req, res) {
 
 exports.register = (req, res) => {
   let user = new User(req.body);
-  user.register();
-  if (user.errors.length) {
-    user.errors.forEach(error => req.flash('regErrors', error));
-    req.session.save(callback => res.redirect('/'));
-  } else {
-    res.send('Congrats, there are no errors');
-  }
+  user
+    .register()
+    .then(() => {
+      req.session.user = { username: user.data.username };
+      req.session.save(callback => res.redirect('/'));
+    })
+    .catch(errors => {
+      errors.forEach(error => req.flash('regErrors', error));
+      req.session.save(callback => res.redirect('/'));
+    });
 };
 
 exports.home = function(req, res) {
