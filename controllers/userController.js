@@ -36,7 +36,7 @@ exports.register = (req, res) => {
   user.register();
   if (user.errors.length) {
     user.errors.forEach(error => req.flash('regErrors', error));
-    res.redirect('/');
+    req.session.save(callback => res.redirect('/'));
   } else {
     res.send('Congrats, there are no errors');
   }
