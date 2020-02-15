@@ -16,7 +16,11 @@ exports.login = function(req, res) {
         res.redirect('/');
       });
     })
-    .catch(err => res.send(err));
+    .catch(err => {
+      // store error msg in session cookie in db
+      req.flash('errors', err);
+      res.redirect('/');
+    });
 };
 
 exports.logout = function(req, res) {
@@ -42,6 +46,9 @@ exports.home = function(req, res) {
   if (req.session.user) {
     res.render('home-dashboard', { username: req.session.user.username });
   } else {
-    res.render('home-guest');
+    // display error message and clear it from db-cookie
+    res.render('home-guest', {
+      errors: req.flash('errors')
+    });
   }
 };
