@@ -1,5 +1,7 @@
 const validator = require('validator');
-const usersCollection = require('../db').collection('users');
+const usersCollection = require('../db')
+  .db()
+  .collection('users');
 const bcrypt = require('bcryptjs');
 const minPwLen = 4; // for testing
 const maxPwLen = 50; // restricted by bcryptjs
@@ -68,6 +70,7 @@ User.prototype.login = function() {
     usersCollection
       .findOne({ username: this.data.username })
       .then(mongoUser => {
+        console.log('mongoUser', mongoUser);
         if (
           mongoUser &&
           bcrypt.compareSync(this.data.password, mongoUser.password)

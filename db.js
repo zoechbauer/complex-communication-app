@@ -10,7 +10,7 @@ mongodb.connect(
   },
   (err, client) => {
     // console.log('process.env.CONNECTIONSTRING', process.env.CONNECTIONSTRING);
-    module.exports = client.db();
+    module.exports = client;
     const app = require('./app');
     app.listen(process.env.PORT);
   }
