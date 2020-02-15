@@ -35,7 +35,8 @@ exports.register = (req, res) => {
   let user = new User(req.body);
   user.register();
   if (user.errors.length) {
-    res.send(user.errors);
+    user.errors.forEach(error => req.flash('regErrors', error));
+    res.redirect('/');
   } else {
     res.send('Congrats, there are no errors');
   }
@@ -48,7 +49,8 @@ exports.home = function(req, res) {
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
-      errors: req.flash('errors')
+      errors: req.flash('errors'),
+      regErrors: req.flash('regErrors')
     });
   }
 };
