@@ -16,7 +16,11 @@ exports.login = function(req, res) {
         res.redirect('/');
       });
     })
-    .catch(err => res.send(err));
+    .catch(err => {
+      // store error msg in session cookie in db
+      req.flash('errors', err);
+      res.redirect('/');
+    });
 };
 
 exports.logout = function(req, res) {
@@ -29,12 +33,16 @@ exports.logout = function(req, res) {
 
 exports.register = (req, res) => {
   let user = new User(req.body);
-  user.register();
-  if (user.errors.length) {
-    res.send(user.errors);
-  } else {
-    res.send('Congrats, there are no errors');
-  }
+  user
+    .register()
+    .then(() => {
+      req.session.user = { username: user.data.username };
+      req.session.save(callback => res.redirect('/'));
+    })
+    .catch(errors => {
+      errors.forEach(error => req.flash('regErrors', error));
+      req.session.save(callback => res.redirect('/'));
+    });
 };
 
 exports.home = function(req, res) {
@@ -42,6 +50,10 @@ exports.home = function(req, res) {
   if (req.session.user) {
     res.render('home-dashboard', { username: req.session.user.username });
   } else {
-    res.render('home-guest');
+    // display error message and clear it from db-cookie
+    res.render('home-guest', {
+      errors: req.flash('errors'),
+      regErrors: req.flash('regErrors')
+    });
   }
 };
