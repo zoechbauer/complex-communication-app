@@ -53,7 +53,7 @@
               data-toggle="tooltip"
               data-placement="bottom"
               style="width: 32px; height: 32px; border-radius: 16px;"
-              src="https://gravatar.com/avatar/f64fc44c03a8a7eb1d52502950879659?s=128"
+              src="<%= avatar %>"
           /></a>
           <a class="btn btn-sm btn-success mr-2" href="#">Create Post</a>
           <form action="/logout" method="POST" class="d-inline">
@@ -67,6 +67,7 @@
     <div class="container py-md-5 container--narrow">
       <div class="text-center">
         <h2>Hello <strong><%= username %></strong>, your feed is empty.</h2>
+        <p class="small">Avatar <i>(Testausgabe)</i>: <%= avatar %></p>
         <p class="lead text-muted">
           Your feed displays the latest posts from the people you follow. If you
           don&rsquo;t have any friends to follow that&rsquo;s okay; you can use

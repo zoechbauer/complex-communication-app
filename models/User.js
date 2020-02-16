@@ -3,9 +3,10 @@ const usersCollection = require('../db')
   .db()
   .collection('users');
 const bcrypt = require('bcryptjs');
+const md5 = require('md5');
 const minPwLen = 4; // for testing
 const maxPwLen = 50; // restricted by bcryptjs
-const minUsernameLen = 4;
+const minUsernameLen = 3;
 const maxUsernameLen = 30;
 
 let User = function(data) {
@@ -97,6 +98,11 @@ User.prototype.validate = function() {
   });
 };
 
+User.prototype.getAvatar = function() {
+  // if avatar at gravatar.com is missing then a default avatar is delivered
+  this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`;
+};
+
 User.prototype.login = function() {
   return new Promise((resolve, reject) => {
     this.cleanUp();
@@ -109,6 +115,8 @@ User.prototype.login = function() {
           mongoUser &&
           bcrypt.compareSync(this.data.password, mongoUser.password)
         ) {
+          this.data = mongoUser;
+          this.getAvatar();
           resolve('congrats, you logged in');
         } else {
           reject('invalid username / password');
@@ -130,6 +138,7 @@ User.prototype.register = function() {
       let salt = bcrypt.genSaltSync(10);
       this.data.password = bcrypt.hashSync(this.data.password, salt);
       await usersCollection.insertOne(this.data);
+      this.getAvatar();
       resolve();
     } else {
       reject(this.errors);

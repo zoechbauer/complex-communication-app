@@ -6,7 +6,7 @@ exports.login = function(req, res) {
     .login()
     .then(result => {
       req.session.user = {
-        favColor: 'blue',
+        avatar: user.avatar,
         username: user.data.username
       };
       // although the above stmt would store the session in db automatically
@@ -36,7 +36,10 @@ exports.register = (req, res) => {
   user
     .register()
     .then(() => {
-      req.session.user = { username: user.data.username };
+      req.session.user = {
+        username: user.data.username,
+        avatar: user.avatar
+      };
       req.session.save(callback => res.redirect('/'));
     })
     .catch(errors => {
@@ -48,7 +51,10 @@ exports.register = (req, res) => {
 exports.home = function(req, res) {
   console.log('req.session.user', req.session.user);
   if (req.session.user) {
-    res.render('home-dashboard', { username: req.session.user.username });
+    res.render('home-dashboard', {
+      username: req.session.user.username,
+      avatar: req.session.user.avatar
+    });
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
