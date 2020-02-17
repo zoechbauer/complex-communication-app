@@ -16,7 +16,8 @@ exports.login = function(req, res) {
     .then(result => {
       req.session.user = {
         avatar: user.avatar,
-        username: user.data.username
+        username: user.data.username,
+        _id: user.data._id
       };
       // although the above stmt would store the session in db automatically
       // we store it manually in db to use a callback for redirect to home
@@ -47,7 +48,8 @@ exports.register = (req, res) => {
     .then(() => {
       req.session.user = {
         username: user.data.username,
-        avatar: user.avatar
+        avatar: user.avatar,
+        _id: user.data._id
       };
       req.session.save(callback => res.redirect('/'));
     })
@@ -58,7 +60,7 @@ exports.register = (req, res) => {
 };
 
 exports.home = function(req, res) {
-  console.log('req.session.user', req.session.user);
+  // console.log('req.session.user', req.session.user);
   if (req.session.user) {
     res.render('home-dashboard');
   } else {
