@@ -58,4 +58,24 @@ Post.prototype.create = function() {
   });
 };
 
+// this is an example of using a function as property
+// and not using the OO pattern
+Post.findSingleById = function(id) {
+  return new Promise(async (resolve, reject) => {
+    if (typeof id != 'string' || !ObjectId.isValid(id)) {
+      reject('Wrong id');
+      return;
+    }
+
+    const post = await postsCollection.findOne({
+      _id: new ObjectId(id)
+    });
+    if (post) {
+      resolve(post);
+    } else {
+      reject('Post not found');
+    }
+  });
+};
+
 module.exports = Post;

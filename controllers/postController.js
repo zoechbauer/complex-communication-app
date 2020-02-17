@@ -16,6 +16,14 @@ exports.create = (req, res) => {
     });
 };
 
-exports.viewSingle = (req, res) => {
-  res.render('single-post-screen');
+exports.viewSingle = async (req, res) => {
+  try {
+    let post = await Post.findSingleById(req.params.id);
+    console.log('post', post);
+    res.render('single-post-screen', {
+      post: post
+    });
+  } catch (error) {
+    res.send('error: ' + error);
+  }
 };
