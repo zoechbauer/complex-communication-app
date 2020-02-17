@@ -15,3 +15,7 @@ exports.create = (req, res) => {
       res.send('error in postController.create: ' + err);
     });
 };
+
+exports.viewSingle = (req, res) => {
+  res.render('single-post-screen');
+};
