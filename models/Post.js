@@ -1,15 +1,15 @@
+const ObjectId = require('mongodb').ObjectID;
 const postsCollection = require('../db')
   .db()
   .collection('posts');
 
-let Post = function(data) {
+let Post = function(data, userId) {
   this.data = data;
+  this.userId = userId;
   this.errors = [];
-  console.log('ctor', this.data);
 };
 
 Post.prototype.cleanUp = function() {
-  console.log('cleanup');
   if (typeof this.data.title != 'string') {
     this.data.title = '';
   }
@@ -22,12 +22,12 @@ Post.prototype.cleanUp = function() {
   this.data = {
     title: this.data.title.trim(),
     body: this.data.body.trim(),
-    createdDate: new Date()
+    createdDate: new Date(),
+    Author: ObjectId(this.userId)
   };
 };
 
 Post.prototype.validate = function() {
-  console.log('validate');
   if (this.data.title == '') {
     this.errors.push('You must provide a title');
   }
@@ -38,14 +38,11 @@ Post.prototype.validate = function() {
 };
 
 Post.prototype.create = function() {
-  console.log('create');
   return new Promise((resolve, reject) => {
     this.cleanUp();
     this.validate();
-    console.log('before insert db: ', this.data);
     if (!this.errors.length) {
       // store post in database
-      console.log('insert db: ', this.data);
       postsCollection
         .insertOne(this.data)
         .then(() => {
