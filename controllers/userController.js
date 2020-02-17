@@ -58,7 +58,7 @@ exports.register = (req, res) => {
 };
 
 exports.home = function(req, res) {
-  console.log('req.session.user', req.session.user);
+  // console.log('req.session.user', req.session.user);
   if (req.session.user) {
     res.render('home-dashboard');
   } else {
