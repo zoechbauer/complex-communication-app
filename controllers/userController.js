@@ -72,10 +72,19 @@ exports.home = function(req, res) {
   }
 };
 
-exports.ifProfileExists = function(req, res, next) {
-  next();
+exports.ifUserExists = function(req, res, next) {
+  User.findByUsername(req.params.username)
+    .then(userDoc => {
+      req.profileUser = userDoc;
+      next();
+    })
+    .catch(err => {
+      console.log('ERROR', err);
+      res.render('404');
+    });
 };
 
 exports.profilePostsScreen = function(req, res) {
+  console.log('req-profileUser', req.profileUser);
   res.render('profile');
 };

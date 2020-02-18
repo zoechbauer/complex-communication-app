@@ -11,8 +11,8 @@ router.post('/logout', userController.logout);
 
 // profile related routes
 router.get(
-  '/profile/:id',
-  userController.ifProfileExists,
+  '/profile/:username',
+  userController.ifUserExists,
   userController.profilePostsScreen
 );
 
