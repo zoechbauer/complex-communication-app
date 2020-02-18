@@ -108,4 +108,47 @@ Post.findSingleById = function(id) {
   });
 };
 
+Post.findByAuthorId = function(authorId) {
+  return new Promise(async (resolve, reject) => {
+    if (!ObjectId.isValid(authorId)) {
+      reject('Wrong id');
+      return;
+    }
+
+    let posts = await postsCollection
+      .aggregate([
+        { $match: { author: ObjectId(authorId) } },
+        { $sort: { createdDate: -1 } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'author',
+            foreignField: '_id',
+            as: 'authorDocument'
+          }
+        },
+        {
+          $project: {
+            title: 1,
+            body: 1,
+            createdDate: 1,
+            author: { $arrayElemAt: ['$authorDocument', 0] }
+          }
+        }
+      ])
+      .toArray();
+
+    // clean up author property in each object
+    posts = posts.map(post => {
+      post.author = {
+        username: post.author.username,
+        avatar: new User(post.author, true).avatar
+      };
+      return post;
+    });
+
+    resolve(posts);
+  });
+};
+
 module.exports = Post;

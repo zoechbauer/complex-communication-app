@@ -12,7 +12,6 @@ const maxUsernameLen = 30;
 let User = function(data, getAvatar) {
   this.data = data;
   this.errors = [];
-  console.log('getAvatar', getAvatar);
   if (getAvatar == undefined) {
     getAvatar = false;
   }
