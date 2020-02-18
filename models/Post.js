@@ -59,7 +59,7 @@ Post.prototype.create = function() {
   });
 };
 
-Post.reusablePostQuery = function(uniqueOperations) {
+Post.reusablePostQuery = function(uniqueOperations, visitorId) {
   return new Promise(async (resolve, reject) => {
     let aggregateOperations = uniqueOperations.concat([
       {
@@ -75,6 +75,7 @@ Post.reusablePostQuery = function(uniqueOperations) {
           title: 1,
           body: 1,
           createdDate: 1,
+          authorId: '$author',
           author: { $arrayElemAt: ['$authorDocument', 0] }
         }
       }
@@ -84,28 +85,31 @@ Post.reusablePostQuery = function(uniqueOperations) {
 
     // clean up author property in each object
     posts = posts.map(post => {
+      post.isVisitorOwner = post.authorId.equals(visitorId);
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
       };
-      console.log('reusablePostQuery: resolve posts', posts);
-      resolve(posts);
+      return post;
     });
+    resolve(posts);
+    console.log('reusablePostQuery: resolve posts', posts);
   });
 };
 
 // this is an example of using a function as property
 // and not using the OO pattern
-Post.findSingleById = function(id) {
+Post.findSingleById = function(id, visitorId) {
   return new Promise(async (resolve, reject) => {
     if (typeof id != 'string' || !ObjectId.isValid(id)) {
       reject('Wrong id');
       return;
     }
 
-    const posts = await Post.reusablePostQuery([
-      { $match: { _id: ObjectId(id) } }
-    ]);
+    const posts = await Post.reusablePostQuery(
+      [{ $match: { _id: ObjectId(id) } }],
+      visitorId
+    );
 
     if (posts.length) {
       resolve(posts[0]);
