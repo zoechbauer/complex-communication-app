@@ -85,6 +85,10 @@ exports.ifUserExists = function(req, res, next) {
 };
 
 exports.profilePostsScreen = function(req, res) {
-  console.log('req-profileUser', req.profileUser);
-  res.render('profile');
+  console.log('req.profileUser', req.profileUser);
+  // expose only the needed properties
+  res.render('profile', {
+    profileUsername: req.profileUser.username,
+    profileAvatar: req.profileUser.avatar
+  });
 };
