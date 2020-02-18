@@ -59,6 +59,41 @@ Post.prototype.create = function() {
   });
 };
 
+Post.reusablePostQuery = function(uniqueOperations) {
+  return new Promise(async (resolve, reject) => {
+    let aggregateOperations = uniqueOperations.concat([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'authorDocument'
+        }
+      },
+      {
+        $project: {
+          title: 1,
+          body: 1,
+          createdDate: 1,
+          author: { $arrayElemAt: ['$authorDocument', 0] }
+        }
+      }
+    ]);
+
+    let posts = await postsCollection.aggregate(aggregateOperations).toArray();
+
+    // clean up author property in each object
+    posts = posts.map(post => {
+      post.author = {
+        username: post.author.username,
+        avatar: new User(post.author, true).avatar
+      };
+      console.log('reusablePostQuery: resolve posts', posts);
+      resolve(posts);
+    });
+  });
+};
+
 // this is an example of using a function as property
 // and not using the OO pattern
 Post.findSingleById = function(id) {
@@ -68,39 +103,11 @@ Post.findSingleById = function(id) {
       return;
     }
 
-    let posts = await postsCollection
-      .aggregate([
-        { $match: { _id: ObjectId(id) } },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'author',
-            foreignField: '_id',
-            as: 'authorDocument'
-          }
-        },
-        {
-          $project: {
-            title: 1,
-            body: 1,
-            createdDate: 1,
-            author: { $arrayElemAt: ['$authorDocument', 0] }
-          }
-        }
-      ])
-      .toArray();
-
-    // clean up author property in each object
-    posts = posts.map(post => {
-      post.author = {
-        username: post.author.username,
-        avatar: new User(post.author, true).avatar
-      };
-      return post;
-    });
+    const posts = await Post.reusablePostQuery([
+      { $match: { _id: ObjectId(id) } }
+    ]);
 
     if (posts.length) {
-      console.log('posts[0]', posts[0]);
       resolve(posts[0]);
     } else {
       reject('Post not found');
@@ -115,40 +122,21 @@ Post.findByAuthorId = function(authorId) {
       return;
     }
 
-    let posts = await postsCollection
-      .aggregate([
-        { $match: { author: ObjectId(authorId) } },
-        { $sort: { createdDate: -1 } },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'author',
-            foreignField: '_id',
-            as: 'authorDocument'
-          }
-        },
-        {
-          $project: {
-            title: 1,
-            body: 1,
-            createdDate: 1,
-            author: { $arrayElemAt: ['$authorDocument', 0] }
-          }
-        }
-      ])
-      .toArray();
-
-    // clean up author property in each object
-    posts = posts.map(post => {
-      post.author = {
-        username: post.author.username,
-        avatar: new User(post.author, true).avatar
-      };
-      return post;
-    });
+    const posts = await Post.reusablePostQuery([
+      { $match: { author: ObjectId(authorId) } },
+      { $sort: { createdDate: -1 } }
+    ]);
 
     resolve(posts);
   });
 };
+
+// Brad's version
+// Post.findByAuthorId = function(authorId) {
+//   return Post.reusablePostQuery([
+//     { $match: { author: authorId } },
+//     { $sort: { createdDate: -1 } }
+//   ]);
+// };
 
 module.exports = Post;

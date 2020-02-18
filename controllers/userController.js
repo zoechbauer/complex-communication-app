@@ -86,6 +86,7 @@ exports.ifUserExists = function(req, res, next) {
 };
 
 exports.profilePostsScreen = function(req, res) {
+  // get all posts of a certain author id
   Post.findByAuthorId(req.profileUser._id)
     .then(posts => {
       console.log('profilePostsScreen - posts', posts);
