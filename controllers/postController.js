@@ -15,3 +15,14 @@ exports.create = (req, res) => {
       res.send('error in postController.create: ' + err);
     });
 };
+
+exports.viewSingle = async (req, res) => {
+  try {
+    let post = await Post.findSingleById(req.params.id);
+    res.render('single-post-screen', {
+      post: post
+    });
+  } catch (error) {
+    res.render('404');
+  }
+};

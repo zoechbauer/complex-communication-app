@@ -9,9 +9,16 @@ const maxPwLen = 50; // restricted by bcryptjs
 const minUsernameLen = 3;
 const maxUsernameLen = 30;
 
-let User = function(data) {
+let User = function(data, getAvatar) {
   this.data = data;
   this.errors = [];
+  console.log('getAvatar', getAvatar);
+  if (getAvatar == undefined) {
+    getAvatar = false;
+  }
+  if (getAvatar) {
+    this.getAvatar();
+  }
 };
 
 User.prototype.cleanUp = function() {
