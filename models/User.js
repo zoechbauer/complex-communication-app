@@ -12,7 +12,6 @@ const maxUsernameLen = 30;
 let User = function(data, getAvatar) {
   this.data = data;
   this.errors = [];
-  console.log('getAvatar', getAvatar);
   if (getAvatar == undefined) {
     getAvatar = false;
   }
@@ -150,6 +149,34 @@ User.prototype.register = function() {
     } else {
       reject(this.errors);
     }
+  });
+};
+
+User.findByUsername = function(username) {
+  return new Promise((resolve, reject) => {
+    if (typeof username != 'string') {
+      reject('Wrong username');
+      return;
+    }
+
+    usersCollection
+      .findOne({ username: username })
+      .then(userDoc => {
+        if (userDoc) {
+          let userProfile = new User(userDoc, true);
+          userProfile = {
+            _id: userProfile.data._id,
+            username: userProfile.data.username,
+            avatar: userProfile.avatar
+          };
+          resolve(userProfile);
+        } else {
+          reject('Userprofile does not exist.');
+        }
+      })
+      .catch(err => {
+        reject('Could not read database. Please try it later again.');
+      });
   });
 };
 
