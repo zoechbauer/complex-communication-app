@@ -71,3 +71,11 @@ exports.home = function(req, res) {
     });
   }
 };
+
+exports.ifProfileExists = function(req, res, next) {
+  next();
+};
+
+exports.profilePostsScreen = function(req, res) {
+  res.render('profile');
+};
