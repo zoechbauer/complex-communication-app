@@ -47,10 +47,12 @@ Post.prototype.create = function() {
       // store post in database
       postsCollection
         .insertOne(this.data)
-        .then(() => {
-          resolve();
+        .then(info => {
+          console.log('mongodb-create.ops', info.ops[0]);
+          resolve(info.ops[0]._id);
         })
-        .catch(() => {
+        .catch(err => {
+          console.log('db-error', err);
           this.errors.push('Please try again later');
           reject(this.errors);
         });

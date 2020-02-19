@@ -67,7 +67,6 @@ exports.home = function(req, res) {
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
-      errors: req.flash('errors'),
       regErrors: req.flash('regErrors')
     });
   }

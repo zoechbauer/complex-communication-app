@@ -8,11 +8,13 @@ exports.create = (req, res) => {
   let post = new Post(req.body, req.session.user._id);
   post
     .create()
-    .then(() => {
-      res.send('Post stored in database');
+    .then(newId => {
+      req.flash('success', 'Post successfully created');
+      req.session.save(callback => res.redirect(`/post/${newId}`));
     })
     .catch(err => {
-      res.send('error in postController.create: ' + err);
+      req.flash('errors', err);
+      req.sessio.save(callback => res.redirect('/create-post'));
     });
 };
 
@@ -30,7 +32,13 @@ exports.viewSingle = async (req, res) => {
 exports.viewEditScreen = async (req, res) => {
   try {
     const post = await Post.findSingleById(req.params.id);
-    res.render('edit-post', { post: post });
+    console.log('view', post);
+    if (post.authorId == req.visitorId) {
+      res.render('edit-post', { post: post });
+    } else {
+      req.flash('errors', 'You are not permitted to perform that action');
+      req.session.save(callback => res.redirect('/'));
+    }
   } catch (error) {
     console.log('ERROR in view EditScreen: ', error);
     res.render(404);
