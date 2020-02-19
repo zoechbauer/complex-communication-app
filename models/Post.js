@@ -4,9 +4,10 @@ const postsCollection = require('../db')
   .collection('posts');
 const User = require('./User');
 
-let Post = function(data, userId) {
+let Post = function(data, userId, requestedPostId) {
   this.data = data;
   this.userId = userId;
+  this.requestedPostId = requestedPostId;
   this.errors = [];
 };
 
@@ -59,6 +60,46 @@ Post.prototype.create = function() {
   });
 };
 
+Post.prototype.update = function() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let post = await Post.findSingleById(this.requestedPostId, this.userId);
+      console.log('update post', post);
+      if (post.isVisitorOwner) {
+        let status = await this.updateDatabase();
+        resolve(status);
+      } else {
+        reject('not owner of post');
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+Post.prototype.updateDatabase = function() {
+  return new Promise(async (resolve, reject) => {
+    this.cleanUp();
+    this.validate();
+
+    try {
+      if (!this.errors.length) {
+        await postsCollection.findOneAndUpdate(
+          { _id: new ObjectId(this.requestedPostId) },
+          { $set: { title: this.data.title, body: this.data.body } }
+        );
+        resolve('success');
+      } else {
+        resolve('validation errors');
+      }
+    } catch (error) {
+      this.errors.push(error);
+      console.log('ERROR in updateDatabase: ', error);
+      reject('error');
+    }
+  });
+};
+
 Post.reusablePostQuery = function(uniqueOperations, visitorId) {
   return new Promise(async (resolve, reject) => {
     let aggregateOperations = uniqueOperations.concat([
@@ -107,7 +148,7 @@ Post.findSingleById = function(id, visitorId) {
     }
 
     const posts = await Post.reusablePostQuery(
-      [{ $match: { _id: ObjectId(id) } }],
+      [{ $match: { _id: new ObjectId(id) } }],
       visitorId
     );
 

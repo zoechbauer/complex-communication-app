@@ -20,13 +20,16 @@ app.use(flash());
 
 // this function is called on each http request
 app.use(function(req, res, next) {
+  // make all error and success flash messages available from all templates
+  res.locals.errors = req.flash('errors');
+  res.locals.success = req.flash('success');
+
   // make current user id available on the request objecct
   if (req.session.user) {
     req.visitorId = req.session.user._id;
   } else {
     req.visitorId = 0;
   }
-  console.log('app.use - req.visitor', req.visitorId);
 
   // make user session data available within view templates
   res.locals.user = req.session.user;
