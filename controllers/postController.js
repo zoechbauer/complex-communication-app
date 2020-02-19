@@ -27,6 +27,12 @@ exports.viewSingle = async (req, res) => {
   }
 };
 
-exports.viewEditScreen = (req, res) => {
-  res.render('edit-post');
+exports.viewEditScreen = async (req, res) => {
+  try {
+    const post = await Post.findSingleById(req.params.id);
+    res.render('edit-post', { post: post });
+  } catch (error) {
+    console.log('ERROR in view EditScreen: ', error);
+    res.render(404);
+  }
 };

@@ -10,6 +10,7 @@
         required
         name="title"
         id="post-title"
+        value="<%= post.title %>"
         class="form-control form-control-lg form-control-title"
         type="text"
         placeholder=""
@@ -27,7 +28,9 @@
         id="post-body"
         class="body-content tall-textarea form-control"
         type="text"
-      ></textarea>
+      >
+<%= post.body %></textarea
+      >
     </div>
 
     <button class="btn btn-primary">Save Updates</button>
