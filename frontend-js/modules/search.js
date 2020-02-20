@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export default class Search {
   // 1. Select DOM Elements, and keep track of any useful data
   constructor() {
@@ -8,6 +10,8 @@ export default class Search {
     this.inputField = document.querySelector('#live-search-field');
     this.loaderIcon = document.querySelector('.circle-loader');
     this.resultsArea = document.querySelector('.live-search-results');
+    this.typingWaitTimer;
+    this.previousValue = '';
     this.events();
   }
 
@@ -23,11 +27,26 @@ export default class Search {
 
   // 3. Methods
   keyPressHandler() {
-    this.showLoaderIcon();
+    let value = this.inputField.value;
+
+    if (value != '' && value != this.previousValue) {
+      clearTimeout(this.typingWaitTimer);
+      this.showLoaderIcon();
+      this.typingWaitTimer = setTimeout(() => this.sendRequest(), 3000);
+    }
+
+    this.previousValue = value;
+  }
+
+  sendRequest() {
+    console.log(this.inputField.value);
+    axios
+      .post('/search', { searchTerm: this.inputField.value })
+      .then(() => {})
+      .catch(err => alert('An error occurred on sending request'));
   }
 
   showLoaderIcon() {
-    console.log('showLoaderIcon');
     this.loaderIcon.classList.add('circle-loader--visible');
   }
 
