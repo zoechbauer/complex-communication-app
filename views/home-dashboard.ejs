@@ -1,6 +1,8 @@
 <%- include('includes/header') %>
 
 <div class="container py-md-5 container--narrow">
+  <%- include('includes/flash') %>
+
   <div class="text-center">
     <h2>Hello <strong><%= user.username %></strong>, your feed is empty.</h2>
     <p class="small">Avatar <i>(Testausgabe)</i>: <%= user.avatar %></p>
@@ -13,4 +15,4 @@
   </div>
 </div>
 
-<%- include('includes/footer.ejs') %>
+<%- include('includes/footer') %>

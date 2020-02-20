@@ -61,13 +61,11 @@ exports.register = (req, res) => {
 };
 
 exports.home = function(req, res) {
-  // console.log('req.session.user', req.session.user);
   if (req.session.user) {
     res.render('home-dashboard');
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
-      errors: req.flash('errors'),
       regErrors: req.flash('regErrors')
     });
   }
@@ -89,7 +87,6 @@ exports.profilePostsScreen = function(req, res) {
   // get all posts of a certain author id
   Post.findByAuthorId(req.profileUser._id)
     .then(posts => {
-      console.log('profilePostsScreen - posts', posts);
       // expose only the needed properties
       res.render('profile', {
         posts: posts,

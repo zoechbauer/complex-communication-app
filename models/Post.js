@@ -1,12 +1,14 @@
-const ObjectId = require('mongodb').ObjectID;
+const ObjectID = require('mongodb').ObjectID;
 const postsCollection = require('../db')
   .db()
   .collection('posts');
 const User = require('./User');
+const sanitizeHTML = require('sanitize-html');
 
-let Post = function(data, userId) {
+let Post = function(data, userId, requestedPostId) {
   this.data = data;
   this.userId = userId;
+  this.requestedPostId = requestedPostId;
   this.errors = [];
 };
 
@@ -20,11 +22,18 @@ Post.prototype.cleanUp = function() {
   }
 
   // get rid of unwanted properties
+  // get rid of any bogus properties
   this.data = {
-    title: this.data.title.trim(),
-    body: this.data.body.trim(),
+    title: sanitizeHTML(this.data.title.trim(), {
+      allowedTags: [],
+      allowedAttributes: {}
+    }),
+    body: sanitizeHTML(this.data.body.trim(), {
+      allowedTags: [],
+      allowedAttributes: {}
+    }),
     createdDate: new Date(),
-    author: ObjectId(this.userId)
+    author: ObjectID(this.userId)
   };
 };
 
@@ -46,10 +55,12 @@ Post.prototype.create = function() {
       // store post in database
       postsCollection
         .insertOne(this.data)
-        .then(() => {
-          resolve();
+        .then(info => {
+          console.log('mongodb-create.ops', info.ops[0]);
+          resolve(info.ops[0]._id);
         })
-        .catch(() => {
+        .catch(err => {
+          console.log('db-error', err);
           this.errors.push('Please try again later');
           reject(this.errors);
         });
@@ -59,7 +70,46 @@ Post.prototype.create = function() {
   });
 };
 
-Post.reusablePostQuery = function(uniqueOperations) {
+Post.prototype.update = function() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let post = await Post.findSingleById(this.requestedPostId, this.userId);
+      if (post.isVisitorOwner) {
+        let status = await this.updateDatabase();
+        resolve(status);
+      } else {
+        reject('not owner of post');
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+Post.prototype.updateDatabase = function() {
+  return new Promise(async (resolve, reject) => {
+    this.cleanUp();
+    this.validate();
+
+    try {
+      if (!this.errors.length) {
+        await postsCollection.findOneAndUpdate(
+          { _id: new ObjectID(this.requestedPostId) },
+          { $set: { title: this.data.title, body: this.data.body } }
+        );
+        resolve('success');
+      } else {
+        resolve('validation errors');
+      }
+    } catch (error) {
+      this.errors.push(error);
+      console.log('ERROR in updateDatabase: ', error);
+      reject('error');
+    }
+  });
+};
+
+Post.reusablePostQuery = function(uniqueOperations, visitorId) {
   return new Promise(async (resolve, reject) => {
     let aggregateOperations = uniqueOperations.concat([
       {
@@ -75,6 +125,7 @@ Post.reusablePostQuery = function(uniqueOperations) {
           title: 1,
           body: 1,
           createdDate: 1,
+          authorId: '$author',
           author: { $arrayElemAt: ['$authorDocument', 0] }
         }
       }
@@ -84,29 +135,31 @@ Post.reusablePostQuery = function(uniqueOperations) {
 
     // clean up author property in each object
     posts = posts.map(post => {
+      post.isVisitorOwner = post.authorId.equals(visitorId);
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
       };
-      console.log('reusablePostQuery: resolve posts', posts);
-      resolve(posts);
+      return post;
     });
+    resolve(posts);
+    console.log('reusablePostQuery: resolve posts', posts);
   });
 };
 
 // this is an example of using a function as property
 // and not using the OO pattern
-Post.findSingleById = function(id) {
+Post.findSingleById = function(id, visitorId) {
   return new Promise(async (resolve, reject) => {
-    if (typeof id != 'string' || !ObjectId.isValid(id)) {
+    if (typeof id != 'string' || !ObjectID.isValid(id)) {
       reject('Wrong id');
       return;
     }
 
-    const posts = await Post.reusablePostQuery([
-      { $match: { _id: ObjectId(id) } }
-    ]);
-
+    const posts = await Post.reusablePostQuery(
+      [{ $match: { _id: new ObjectID(id) } }],
+      visitorId
+    );
     if (posts.length) {
       resolve(posts[0]);
     } else {
@@ -117,13 +170,13 @@ Post.findSingleById = function(id) {
 
 Post.findByAuthorId = function(authorId) {
   return new Promise(async (resolve, reject) => {
-    if (!ObjectId.isValid(authorId)) {
+    if (!ObjectID.isValid(authorId)) {
       reject('Wrong id');
       return;
     }
 
     const posts = await Post.reusablePostQuery([
-      { $match: { author: ObjectId(authorId) } },
+      { $match: { author: ObjectID(authorId) } },
       { $sort: { createdDate: -1 } }
     ]);
 
@@ -138,5 +191,21 @@ Post.findByAuthorId = function(authorId) {
 //     { $sort: { createdDate: -1 } }
 //   ]);
 // };
+
+Post.delete = function(postIdToDelete, currentUserId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const post = await Post.findSingleById(postIdToDelete, currentUserId);
+      if (post.isVisitorOwner) {
+        await postsCollection.deleteOne({ _id: new ObjectID(postIdToDelete) });
+        resolve('success');
+      } else {
+        reject('not VisitorOwner');
+      }
+    } catch (error) {
+      reject('post not found');
+    }
+  });
+};
 
 module.exports = Post;
