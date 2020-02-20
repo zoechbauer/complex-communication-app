@@ -33,7 +33,7 @@ Post.prototype.cleanUp = function() {
       allowedAttributes: {}
     }),
     createdDate: new Date(),
-    author: ObjectID(this.userid)
+    author: ObjectID(this.userId)
   };
 };
 
