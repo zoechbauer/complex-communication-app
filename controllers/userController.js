@@ -61,7 +61,6 @@ exports.register = (req, res) => {
 };
 
 exports.home = function(req, res) {
-  // console.log('req.session.user', req.session.user);
   if (req.session.user) {
     res.render('home-dashboard');
   } else {
@@ -88,7 +87,6 @@ exports.profilePostsScreen = function(req, res) {
   // get all posts of a certain author id
   Post.findByAuthorId(req.profileUser._id)
     .then(posts => {
-      console.log('profilePostsScreen - posts', posts);
       // expose only the needed properties
       res.render('profile', {
         posts: posts,

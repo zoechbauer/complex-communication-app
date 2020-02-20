@@ -32,7 +32,6 @@ exports.viewSingle = async (req, res) => {
 exports.viewEditScreen = async (req, res) => {
   try {
     const post = await Post.findSingleById(req.params.id, req.visitorId);
-    console.log('view', post);
     if (post.isVisitorOwner) {
       res.render('edit-post', { post: post });
     } else {
@@ -47,13 +46,11 @@ exports.viewEditScreen = async (req, res) => {
 
 exports.edit = (req, res) => {
   let post = new Post(req.body, req.visitorId, req.params.id);
-  console.log('post', post);
   post
     .update()
     .then(status => {
       if (status == 'success') {
         // successful db update
-        console.log('db update');
         req.flash('success', 'Post successfully updated');
         req.session.save(callback =>
           res.redirect(`/post/${req.params.id}/edit`)
@@ -75,5 +72,21 @@ exports.edit = (req, res) => {
       console.log('ERROR:', err);
       req.flash('errors', 'You do not have permission to perform that action');
       req.session.save(callback => res.redirect('/'));
+    });
+};
+
+exports.delete = function(req, res) {
+  Post.delete(req.params.id, req.visitorId)
+    .then(info => {
+      req.flash('success', 'Post successfully deleted');
+      req.session.save(callback =>
+        res.redirect(`/profile/${req.session.user.username}`)
+      );
+      console.log('post deleted: ' + info);
+    })
+    .catch(err => {
+      req.flash('errors', 'You have no permission to perform that action');
+      req.session.save(callback => res.redirect('/'));
+      console.log('ERROR on delete post: ' + err);
     });
 };

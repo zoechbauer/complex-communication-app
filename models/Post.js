@@ -74,7 +74,6 @@ Post.prototype.update = function() {
   return new Promise(async (resolve, reject) => {
     try {
       let post = await Post.findSingleById(this.requestedPostId, this.userId);
-      console.log('update post', post);
       if (post.isVisitorOwner) {
         let status = await this.updateDatabase();
         resolve(status);
@@ -161,7 +160,6 @@ Post.findSingleById = function(id, visitorId) {
       [{ $match: { _id: new ObjectID(id) } }],
       visitorId
     );
-
     if (posts.length) {
       resolve(posts[0]);
     } else {
@@ -193,5 +191,21 @@ Post.findByAuthorId = function(authorId) {
 //     { $sort: { createdDate: -1 } }
 //   ]);
 // };
+
+Post.delete = function(postIdToDelete, currentUserId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const post = await Post.findSingleById(postIdToDelete, currentUserId);
+      if (post.isVisitorOwner) {
+        await postsCollection.deleteOne({ _id: new ObjectID(postIdToDelete) });
+        resolve('success');
+      } else {
+        reject('not VisitorOwner');
+      }
+    } catch (error) {
+      reject('post not found');
+    }
+  });
+};
 
 module.exports = Post;
