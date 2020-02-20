@@ -1,8 +1,9 @@
-const ObjectId = require('mongodb').ObjectID;
+const ObjectID = require('mongodb').ObjectID;
 const postsCollection = require('../db')
   .db()
   .collection('posts');
 const User = require('./User');
+const sanitizeHTML = require('sanitize-html');
 
 let Post = function(data, userId, requestedPostId) {
   this.data = data;
@@ -21,11 +22,18 @@ Post.prototype.cleanUp = function() {
   }
 
   // get rid of unwanted properties
+  // get rid of any bogus properties
   this.data = {
-    title: this.data.title.trim(),
-    body: this.data.body.trim(),
+    title: sanitizeHTML(this.data.title.trim(), {
+      allowedTags: [],
+      allowedAttributes: {}
+    }),
+    body: sanitizeHTML(this.data.body.trim(), {
+      allowedTags: [],
+      allowedAttributes: {}
+    }),
     createdDate: new Date(),
-    author: ObjectId(this.userId)
+    author: ObjectID(this.userid)
   };
 };
 
@@ -87,7 +95,7 @@ Post.prototype.updateDatabase = function() {
     try {
       if (!this.errors.length) {
         await postsCollection.findOneAndUpdate(
-          { _id: new ObjectId(this.requestedPostId) },
+          { _id: new ObjectID(this.requestedPostId) },
           { $set: { title: this.data.title, body: this.data.body } }
         );
         resolve('success');
@@ -144,13 +152,13 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
 // and not using the OO pattern
 Post.findSingleById = function(id, visitorId) {
   return new Promise(async (resolve, reject) => {
-    if (typeof id != 'string' || !ObjectId.isValid(id)) {
+    if (typeof id != 'string' || !ObjectID.isValid(id)) {
       reject('Wrong id');
       return;
     }
 
     const posts = await Post.reusablePostQuery(
-      [{ $match: { _id: new ObjectId(id) } }],
+      [{ $match: { _id: new ObjectID(id) } }],
       visitorId
     );
 
@@ -164,13 +172,13 @@ Post.findSingleById = function(id, visitorId) {
 
 Post.findByAuthorId = function(authorId) {
   return new Promise(async (resolve, reject) => {
-    if (!ObjectId.isValid(authorId)) {
+    if (!ObjectID.isValid(authorId)) {
       reject('Wrong id');
       return;
     }
 
     const posts = await Post.reusablePostQuery([
-      { $match: { author: ObjectId(authorId) } },
+      { $match: { author: ObjectID(authorId) } },
       { $sort: { createdDate: -1 } }
     ]);
 

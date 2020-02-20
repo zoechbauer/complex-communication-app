@@ -13,8 +13,8 @@ exports.create = (req, res) => {
       req.session.save(callback => res.redirect(`/post/${newId}`));
     })
     .catch(err => {
-      req.flash('errors', err);
-      req.sessio.save(callback => res.redirect('/create-post'));
+      errors.forEach(err => req.flash('errors, err'));
+      req.session.save(callback => res.redirect('/create-post'));
     });
 };
 
@@ -31,9 +31,9 @@ exports.viewSingle = async (req, res) => {
 
 exports.viewEditScreen = async (req, res) => {
   try {
-    const post = await Post.findSingleById(req.params.id);
+    const post = await Post.findSingleById(req.params.id, req.visitorId);
     console.log('view', post);
-    if (post.authorId == req.visitorId) {
+    if (post.isVisitorOwner) {
       res.render('edit-post', { post: post });
     } else {
       req.flash('errors', 'You are not permitted to perform that action');
