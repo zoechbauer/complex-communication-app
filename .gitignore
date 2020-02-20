@@ -12,6 +12,7 @@
 node_modules/
 docs/
 .tmp/
+public/*.js
 
 # OS or Editor folders
 .env
