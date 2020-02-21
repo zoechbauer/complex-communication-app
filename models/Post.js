@@ -136,14 +136,15 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
     // clean up author property in each object
     posts = posts.map(post => {
       post.isVisitorOwner = post.authorId.equals(visitorId);
+      post.authorId = undefined;
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
       };
+      console.log('reusablePostQuery - nach delete post:', post);
       return post;
     });
     resolve(posts);
-    console.log('reusablePostQuery: resolve posts', posts);
   });
 };
 
