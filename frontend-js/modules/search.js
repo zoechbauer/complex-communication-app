@@ -3,6 +3,8 @@ import axios from 'axios';
 export default class Search {
   // 1. Select DOM Elements, and keep track of any useful data
   constructor() {
+    this.WAIT_TIMER_IN_SECONDS = 0.7;
+
     this.injectHTML();
     this.headerSearchIcon = document.querySelector('.header-search-icon');
     this.searchOverlay = document.querySelector('.search-overlay');
@@ -27,12 +29,22 @@ export default class Search {
 
   // 3. Methods
   keyPressHandler() {
-    let value = this.inputField.value;
+    let value = this.inputField.value.trim();
+
+    if (value == '') {
+      clearTimeout(this.typingWaitTimer);
+      this.hideResultsArea();
+      this.hideLoaderIcon();
+    }
 
     if (value != '' && value != this.previousValue) {
       clearTimeout(this.typingWaitTimer);
       this.showLoaderIcon();
-      this.typingWaitTimer = setTimeout(() => this.sendRequest(), 3000);
+      this.hideResultsArea();
+      this.typingWaitTimer = setTimeout(
+        () => this.sendRequest(),
+        this.WAIT_TIMER_IN_SECONDS * 1000
+      );
     }
 
     this.previousValue = value;
@@ -88,6 +100,10 @@ export default class Search {
 
   showResultsArea() {
     this.resultsArea.classList.add('live-search-results--visible');
+  }
+
+  hideResultsArea() {
+    this.resultsArea.classList.remove('live-search-results--visible');
   }
 
   openOverlay() {
