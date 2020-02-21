@@ -42,7 +42,9 @@ export default class Search {
     console.log(this.inputField.value);
     axios
       .post('/search', { searchTerm: this.inputField.value })
-      .then(() => {})
+      .then(response => {
+        console.log(response.data);
+      })
       .catch(err => alert('An error occurred on sending request'));
   }
 

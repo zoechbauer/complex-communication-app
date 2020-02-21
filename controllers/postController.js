@@ -90,3 +90,14 @@ exports.delete = function(req, res) {
       console.log('ERROR on delete post: ' + err);
     });
 };
+
+exports.search = (req, res) => {
+  Post.search(req.body.searchTerm)
+    .then(posts => {
+      res.json(posts);
+    })
+    .catch(err => {
+      console.log('Error in search:', err);
+      res.json([]);
+    });
+};

@@ -208,4 +208,22 @@ Post.delete = function(postIdToDelete, currentUserId) {
   });
 };
 
+Post.search = searchTerm => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (typeof searchTerm == 'string') {
+        let posts = await Post.reusablePostQuery([
+          { $match: { $text: { $search: searchTerm } } },
+          { $sort: { score: { $meta: 'textScore' } } }
+        ]);
+        resolve(posts);
+      } else {
+        reject('wrong type of searchTerm');
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = Post;
