@@ -57,6 +57,10 @@
               style="width: 32px; height: 32px; border-radius: 16px;"
               src="<%= user.avatar %>"
           /></a>
+          <a href="/profile/<%= user.username %>" class="text-white mr-2 header-username"
+            title="My Profile" /><%= user.username
+            %></a
+          >
           <a class="btn btn-sm btn-success mr-2" href="/create-post"
             >Create Post</a
           >
