@@ -5,7 +5,8 @@
 
   <h2>
     <img class="avatar-small" src="<%= profileAvatar %>" />
-    <%= profileUsername %> <% if (user) { if (isFollowing) { %>
+    <%= profileUsername %> <% if (user && !isVisitorProfile) { if (isFollowing)
+    { %>
     <form
       class="ml-2 d-inline"
       action="/removeFollow/<%= profileUsername %>"

@@ -43,6 +43,11 @@ Follow.prototype.validate = async function(action) {
       'You cannot stop following someone you do not already follow'
     );
   }
+
+  // you cannot follow yourself
+  if (this.followedId.equals(this.authorId)) {
+    this.errors.push('You cannot follow yourself');
+  }
 };
 
 Follow.prototype.create = function() {

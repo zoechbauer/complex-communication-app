@@ -4,13 +4,19 @@ const Follow = require('../models/Follow');
 
 exports.sharedProfileData = async function(req, res, next) {
   let isFollowing = false;
+  let isVisitorProfile = false;
+
   if (req.session.user) {
     isFollowing = await Follow.isVisitorFollowing(
       req.profileUser._id,
       req.visitorId
     );
+
+    isVisitorProfile =
+      req.profileUser._id == req.session.user._id ? true : false;
   }
   req.isFollowing = isFollowing;
+  req.isVisitorProfile = isVisitorProfile;
   next();
 };
 
@@ -105,7 +111,8 @@ exports.profilePostsScreen = function(req, res) {
         posts: posts,
         profileUsername: req.profileUser.username,
         profileAvatar: req.profileUser.avatar,
-        isFollowing: req.isFollowing
+        isFollowing: req.isFollowing,
+        isVisitorProfile: req.isVisitorProfile
       });
     })
     .catch(err => {
