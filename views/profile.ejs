@@ -8,7 +8,7 @@
     <%= profileUsername %> <% if (user) { if (isFollowing) { %>
     <form
       class="ml-2 d-inline"
-      action="/stopFollow/<%= profileUsername %>"
+      action="/removeFollow/<%= profileUsername %>"
       method="POST"
     >
       <button class="btn btn-danger btn-sm">
