@@ -46,4 +46,16 @@ Follow.prototype.create = function() {
   });
 };
 
+Follow.isVisitorFollowing = async function(followedId, visitorId) {
+  const followDoc = await followsCollection.findOne({
+    followedId: followedId,
+    authorId: new ObjectID(visitorId)
+  });
+  if (followDoc) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 module.exports = Follow;
