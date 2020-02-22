@@ -141,7 +141,6 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
       };
-      console.log('reusablePostQuery - nach delete post:', post);
       return post;
     });
     resolve(posts);
