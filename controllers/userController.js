@@ -108,6 +108,7 @@ exports.profilePostsScreen = function(req, res) {
     .then(posts => {
       // expose only the needed properties
       res.render('profile', {
+        currentPage: 'posts',
         posts: posts,
         profileUsername: req.profileUser.username,
         profileAvatar: req.profileUser.avatar,
@@ -125,6 +126,7 @@ exports.profileFollowersScreen = async function(req, res) {
   try {
     const followers = await Follow.getFollowersById(req.profileUser._id);
     res.render('profile-followers', {
+      currentPage: 'followers',
       followers: followers,
       profileUsername: req.profileUser.username,
       profileAvatar: req.profileUser.avatar,
@@ -141,6 +143,7 @@ exports.profileFollowingScreen = async function(req, res) {
   try {
     const following = await Follow.getFollowingById(req.profileUser._id);
     res.render('profile-following', {
+      currentPage: 'following',
       following: following,
       profileUsername: req.profileUser.username,
       profileAvatar: req.profileUser.avatar,
