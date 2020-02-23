@@ -48,7 +48,7 @@ exports.login = function(req, res) {
     })
     .catch(err => {
       // store error msg in session cookie in db
-      req.flash('errors', err);
+      req.flash(err);
       res.redirect('/');
     });
 };
@@ -97,7 +97,7 @@ exports.ifUserExists = function(req, res, next) {
       next();
     })
     .catch(err => {
-      console.log('ERROR', err);
+      console.log(err);
       res.render('404');
     });
 };
@@ -116,7 +116,23 @@ exports.profilePostsScreen = function(req, res) {
       });
     })
     .catch(err => {
-      console.log('ERROR in profilePostsScreen: ', err);
+      console.log(err);
       res.render('404');
     });
+};
+
+exports.profileFollowersScreen = async function(req, res) {
+  try {
+    const followers = await Follow.getFollowersById(req.profileUser._id);
+    res.render('profile-followers', {
+      followers: followers,
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorProfile: req.isVisitorProfile
+    });
+  } catch (err) {
+    console.log(err);
+    res.render('404');
+  }
 };
