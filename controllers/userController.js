@@ -17,6 +17,20 @@ exports.sharedProfileData = async function(req, res, next) {
   }
   req.isFollowing = isFollowing;
   req.isVisitorProfile = isVisitorProfile;
+
+  // retrieve posts, followers, and following counts
+  const postsCountPromise = Post.countPostsByAuthor(req.profileUser._id);
+  const followersCountPromise = Follow.countFollowersById(req.profileUser._id);
+  const followingCountPromise = Follow.countFollowingById(req.profileUser._id);
+  let [postsCount, followersCount, followingCount] = await Promise.all([
+    postsCountPromise,
+    followersCountPromise,
+    followingCountPromise
+  ]);
+  req.postsCount = postsCount;
+  req.followersCount = followersCount;
+  req.followingCount = followingCount;
+
   next();
 };
 
@@ -113,7 +127,12 @@ exports.profilePostsScreen = function(req, res) {
         profileUsername: req.profileUser.username,
         profileAvatar: req.profileUser.avatar,
         isFollowing: req.isFollowing,
-        isVisitorProfile: req.isVisitorProfile
+        isVisitorProfile: req.isVisitorProfile,
+        counts: {
+          postsCount: req.postsCount,
+          followersCount: req.followersCount,
+          followingCount: req.followingCount
+        }
       });
     })
     .catch(err => {
@@ -131,7 +150,12 @@ exports.profileFollowersScreen = async function(req, res) {
       profileUsername: req.profileUser.username,
       profileAvatar: req.profileUser.avatar,
       isFollowing: req.isFollowing,
-      isVisitorProfile: req.isVisitorProfile
+      isVisitorProfile: req.isVisitorProfile,
+      counts: {
+        postsCount: req.postsCount,
+        followersCount: req.followersCount,
+        followingCount: req.followingCount
+      }
     });
   } catch (err) {
     console.log(err);
@@ -148,7 +172,12 @@ exports.profileFollowingScreen = async function(req, res) {
       profileUsername: req.profileUser.username,
       profileAvatar: req.profileUser.avatar,
       isFollowing: req.isFollowing,
-      isVisitorProfile: req.isVisitorProfile
+      isVisitorProfile: req.isVisitorProfile,
+      counts: {
+        postsCount: req.postsCount,
+        followersCount: req.followersCount,
+        followingCount: req.followingCount
+      }
     });
   } catch (err) {
     console.log(err);

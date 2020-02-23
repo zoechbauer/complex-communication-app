@@ -177,4 +177,18 @@ Follow.getFollowingById = id => {
   });
 };
 
+Follow.countFollowersById = id => {
+  return new Promise(async (resolve, reject) => {
+    const count = await followsCollection.countDocuments({ followedId: id });
+    resolve(count);
+  });
+};
+
+Follow.countFollowingById = id => {
+  return new Promise(async (resolve, reject) => {
+    const count = await followsCollection.countDocuments({ authorId: id });
+    resolve(count);
+  });
+};
+
 module.exports = Follow;
