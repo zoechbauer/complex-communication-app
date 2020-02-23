@@ -123,7 +123,47 @@ Follow.getFollowersById = id => {
       // get avatar from email
       const followersMapped = followers.map(follower => {
         const user = new User(follower, true);
-        console.log(follower);
+        return {
+          username: follower.username,
+          avatar: user.avatar
+        };
+      });
+      resolve(followersMapped);
+      // error
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+Follow.getFollowingById = id => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // aggregate username & email from follows
+      const aggregateFunction = [
+        { $match: { authorId: id } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'followedId',
+            foreignField: '_id',
+            as: 'userDoc'
+          }
+        },
+        {
+          $project: {
+            username: { $arrayElemAt: ['$userDoc.username', 0] },
+            email: { $arrayElemAt: ['$userDoc.email', 0] }
+          }
+        }
+      ];
+      // get aggregate data from followers
+      const followers = await followsCollection
+        .aggregate(aggregateFunction)
+        .toArray();
+      // get avatar from email
+      const followersMapped = followers.map(follower => {
+        const user = new User(follower, true);
         return {
           username: follower.username,
           avatar: user.avatar
