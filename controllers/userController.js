@@ -96,7 +96,6 @@ exports.register = (req, res) => {
 exports.home = async (req, res) => {
   if (req.session.user) {
     const posts = await Post.getFeed(req.session.user._id);
-    console.log(posts);
     res.render('home-dashboard', { posts: posts });
   } else {
     // display error message and clear it from db-cookie

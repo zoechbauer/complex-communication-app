@@ -244,7 +244,6 @@ Post.getFeed = async userId => {
   const followedUsersId = followedUsersDoc.map(userDoc => {
     return userDoc.followedId;
   });
-  console.log(followedUsersId);
 
   // get posts of users where the author in in the above array
   return Post.reusablePostQuery([
