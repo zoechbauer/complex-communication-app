@@ -76,12 +76,23 @@ app.use('/', router);
 // integrating socket.io
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
-io.on('connection', socket => {
+
+io.use(function(socket, next) {
+  sessionOptions(socket.request, socket.request.res, next);
+});
+
+io.on('connection', function(socket) {
   console.log('A new user connected');
-  socket.on('chatMessageFromBrowser', data => {
-    console.log(data.message);
-    io.emit('chatMessageFromServer', { message: data.message });
-  });
+  if (socket.request.session.user) {
+    let user = socket.request.session.user;
+    socket.on('chatMessageFromBrowser', data => {
+      io.emit('chatMessageFromServer', {
+        message: data.message,
+        username: user.username,
+        avatar: user.avatar
+      });
+    });
+  }
 });
 
 module.exports = server;

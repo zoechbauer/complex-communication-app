@@ -5,6 +5,7 @@ export default class Chat {
     this.injectHTML();
     this.chatField = document.querySelector('#chatField');
     this.chatForm = document.querySelector('#chatForm');
+    this.chatLog = document.querySelector('#chat');
     this.closeIcon = document.querySelector('.chat-title-bar-close');
     this.isChatDisplayed = false;
     this.isConnected = false;
@@ -51,11 +52,26 @@ export default class Chat {
   openConnection() {
     if (!this.isConnected) {
       this.socket = io();
-      this.socket.on('chatMessageFromServer', data => {
-        alert(data.message);
-      });
+      this.socket.on('chatMessageFromServer', data =>
+        this.displayMessageFromServer(data)
+      );
       this.isConnected = true;
     }
+  }
+
+  displayMessageFromServer(data) {
+    this.chatLog.insertAdjacentHTML(
+      'beforeend',
+      `
+      <div class="chat-other">
+        <a href="#"><img class="avatar-tiny" src="${data.avatar}"></a>
+        <div class="chat-message"><div class="chat-message-inner">
+          <a href="#"><strong>${data.username}:</strong></a>
+          ${data.message}
+        </div></div>
+      </div>
+    `
+    );
   }
 
   // methods
