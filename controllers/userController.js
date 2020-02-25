@@ -1,5 +1,38 @@
 const User = require('../models/User');
 const Post = require('../models/Post');
+const Follow = require('../models/Follow');
+
+exports.sharedProfileData = async function(req, res, next) {
+  let isFollowing = false;
+  let isVisitorProfile = false;
+
+  if (req.session.user) {
+    isFollowing = await Follow.isVisitorFollowing(
+      req.profileUser._id,
+      req.visitorId
+    );
+
+    isVisitorProfile =
+      req.profileUser._id == req.session.user._id ? true : false;
+  }
+  req.isFollowing = isFollowing;
+  req.isVisitorProfile = isVisitorProfile;
+
+  // retrieve posts, followers, and following counts
+  const postsCountPromise = Post.countPostsByAuthor(req.profileUser._id);
+  const followersCountPromise = Follow.countFollowersById(req.profileUser._id);
+  const followingCountPromise = Follow.countFollowingById(req.profileUser._id);
+  let [postsCount, followersCount, followingCount] = await Promise.all([
+    postsCountPromise,
+    followersCountPromise,
+    followingCountPromise
+  ]);
+  req.postsCount = postsCount;
+  req.followersCount = followersCount;
+  req.followingCount = followingCount;
+
+  next();
+};
 
 exports.mustBeLoggedIn = (req, res, next) => {
   if (req.session.user) {
@@ -29,7 +62,7 @@ exports.login = function(req, res) {
     })
     .catch(err => {
       // store error msg in session cookie in db
-      req.flash('errors', err);
+      req.flash(err);
       res.redirect('/');
     });
 };
@@ -60,9 +93,11 @@ exports.register = (req, res) => {
     });
 };
 
-exports.home = function(req, res) {
+exports.home = async (req, res) => {
   if (req.session.user) {
-    res.render('home-dashboard');
+    const posts = await Post.getFeed(req.session.user._id);
+    console.log(posts);
+    res.render('home-dashboard', { posts: posts });
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
@@ -78,7 +113,7 @@ exports.ifUserExists = function(req, res, next) {
       next();
     })
     .catch(err => {
-      console.log('ERROR', err);
+      console.log(err);
       res.render('404');
     });
 };
@@ -89,13 +124,65 @@ exports.profilePostsScreen = function(req, res) {
     .then(posts => {
       // expose only the needed properties
       res.render('profile', {
+        currentPage: 'posts',
         posts: posts,
         profileUsername: req.profileUser.username,
-        profileAvatar: req.profileUser.avatar
+        profileAvatar: req.profileUser.avatar,
+        isFollowing: req.isFollowing,
+        isVisitorProfile: req.isVisitorProfile,
+        counts: {
+          postsCount: req.postsCount,
+          followersCount: req.followersCount,
+          followingCount: req.followingCount
+        }
       });
     })
     .catch(err => {
-      console.log('ERROR in profilePostsScreen: ', err);
+      console.log(err);
       res.render('404');
     });
+};
+
+exports.profileFollowersScreen = async function(req, res) {
+  try {
+    const followers = await Follow.getFollowersById(req.profileUser._id);
+    res.render('profile-followers', {
+      currentPage: 'followers',
+      followers: followers,
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorProfile: req.isVisitorProfile,
+      counts: {
+        postsCount: req.postsCount,
+        followersCount: req.followersCount,
+        followingCount: req.followingCount
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    res.render('404');
+  }
+};
+
+exports.profileFollowingScreen = async function(req, res) {
+  try {
+    const following = await Follow.getFollowingById(req.profileUser._id);
+    res.render('profile-following', {
+      currentPage: 'following',
+      following: following,
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorProfile: req.isVisitorProfile,
+      counts: {
+        postsCount: req.postsCount,
+        followersCount: req.followersCount,
+        followingCount: req.followingCount
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    res.render('404');
+  }
 };

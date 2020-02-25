@@ -2,6 +2,9 @@ const ObjectID = require('mongodb').ObjectID;
 const postsCollection = require('../db')
   .db()
   .collection('posts');
+const followsCollection = require('../db')
+  .db()
+  .collection('follows');
 const User = require('./User');
 const sanitizeHTML = require('sanitize-html');
 
@@ -141,7 +144,6 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
       };
-      console.log('reusablePostQuery - nach delete post:', post);
       return post;
     });
     resolve(posts);
@@ -225,6 +227,30 @@ Post.search = searchTerm => {
       reject(error);
     }
   });
+};
+
+Post.countPostsByAuthor = id => {
+  return new Promise(async (resolve, reject) => {
+    const count = await postsCollection.countDocuments({ author: id });
+    resolve(count);
+  });
+};
+
+Post.getFeed = async userId => {
+  // get array of user id that the current user follows
+  const followedUsersDoc = await followsCollection
+    .find({ authorId: new ObjectID(userId) })
+    .toArray();
+  const followedUsersId = followedUsersDoc.map(userDoc => {
+    return userDoc.followedId;
+  });
+  console.log(followedUsersId);
+
+  // get posts of users where the author in in the above array
+  return Post.reusablePostQuery([
+    { $match: { author: { $in: followedUsersId } } },
+    { $sort: { createdDate: -1 } }
+  ]);
 };
 
 module.exports = Post;

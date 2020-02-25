@@ -22,6 +22,11 @@ body,
   top: 3px;
 }
 
+.header-username {
+  position: relative;
+  top: 3px;
+}
+
 .avatar-small {
   width: 32px;
   height: 32px;
