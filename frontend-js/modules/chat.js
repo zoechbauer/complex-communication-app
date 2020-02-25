@@ -3,6 +3,8 @@ export default class Chat {
     this.chatWrapper = document.querySelector('#chat-wrapper');
     this.chatIcon = document.querySelector('.header-chat-icon');
     this.injectHTML();
+    this.chatField = document.querySelector('#chatField');
+    this.chatForm = document.querySelector('#chatForm');
     this.closeIcon = document.querySelector('.chat-title-bar-close');
     this.isChatDisplayed = false;
     this.isConnected = false;
@@ -13,6 +15,18 @@ export default class Chat {
   events() {
     this.chatIcon.addEventListener('click', e => this.toggleChat());
     this.closeIcon.addEventListener('click', e => this.closeChat());
+    this.chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      this.sendMessageToServer();
+    });
+  }
+
+  sendMessageToServer() {
+    this.socket.emit('chatMessageFromBrowser', {
+      message: this.chatField.value
+    });
+    this.chatField.value = '';
+    this.chatField.focus();
   }
 
   closeChat() {
@@ -37,8 +51,10 @@ export default class Chat {
   openConnection() {
     if (!this.isConnected) {
       this.socket = io();
+      this.socket.on('chatMessageFromServer', data => {
+        alert(data.message);
+      });
       this.isConnected = true;
-      console.log('isConnected', this.isConnected);
     }
   }
 
