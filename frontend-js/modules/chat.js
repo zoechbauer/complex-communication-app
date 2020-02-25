@@ -5,6 +5,7 @@ export default class Chat {
     this.injectHTML();
     this.closeIcon = document.querySelector('.chat-title-bar-close');
     this.isChatDisplayed = false;
+    this.isConnection = false;
     this.events();
   }
 
@@ -19,13 +20,25 @@ export default class Chat {
     this.isChatDisplayed = false;
   }
 
+  openChat() {
+    this.chatWrapper.classList.add('chat--visible');
+    this.isChatDisplayed = true;
+    this.openConnection();
+  }
+
   toggleChat() {
     if (this.isChatDisplayed) {
-      this.chatWrapper.classList.remove('chat--visible');
+      this.closeChat();
     } else {
-      this.chatWrapper.classList.add('chat--visible');
+      this.openChat();
     }
-    this.isChatDisplayed = !this.isChatDisplayed;
+  }
+
+  openConnection() {
+    if (!this.isConnection) {
+      alert('opening connection ...');
+      this.isConnection = true;
+    }
   }
 
   // methods
