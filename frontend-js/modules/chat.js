@@ -5,7 +5,7 @@ export default class Chat {
     this.injectHTML();
     this.closeIcon = document.querySelector('.chat-title-bar-close');
     this.isChatDisplayed = false;
-    this.isConnection = false;
+    this.isConnected = false;
     this.events();
   }
 
@@ -35,9 +35,10 @@ export default class Chat {
   }
 
   openConnection() {
-    if (!this.isConnection) {
-      alert('opening connection ...');
-      this.isConnection = true;
+    if (!this.isConnected) {
+      this.socket = io();
+      this.isConnected = true;
+      console.log('isConnected', this.isConnected);
     }
   }
 
