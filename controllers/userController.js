@@ -40,6 +40,11 @@ exports.doesUsernameExist = function(req, res) {
     .catch(() => res.json(false));
 };
 
+exports.doesEmailExist = async function(req, res) {
+  const emailBool = await User.doesEmailExist(req.body.email);
+  res.json(emailBool);
+};
+
 exports.mustBeLoggedIn = (req, res, next) => {
   if (req.session.user) {
     next();

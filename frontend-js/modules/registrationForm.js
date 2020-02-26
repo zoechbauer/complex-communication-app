@@ -1,12 +1,15 @@
 import axios from 'axios';
 export default class RegistrationForm {
   constructor() {
+    this.WAIT_TIMER_IN_MS = 800;
     this.allFields = document.querySelectorAll(
       '#registration-form .form-control'
     );
     this.insertValidationElements();
     this.username = document.querySelector('#username-register');
     this.username.previousValue = '';
+    this.email = document.querySelector('#email-register');
+    this.email.previousValue = '';
     this.events();
   }
 
@@ -14,6 +17,9 @@ export default class RegistrationForm {
   events() {
     this.username.addEventListener('keyup', () => {
       this.isDifferent(this.username, this.usernameHandler);
+    });
+    this.email.addEventListener('keyup', () => {
+      this.isDifferent(this.email, this.emailHandler);
     });
   }
 
@@ -29,7 +35,19 @@ export default class RegistrationForm {
     this.username.errors = false;
     this.usernameImmediately();
     clearTimeout(this.username.timer);
-    this.username.timer = setTimeout(() => this.usernameAfterDelay(), 3000);
+    this.username.timer = setTimeout(
+      () => this.usernameAfterDelay(),
+      this.WAIT_TIMER_IN_MS
+    );
+  }
+
+  emailHandler() {
+    this.email.errors = false;
+    clearTimeout(this.email.timer);
+    this.email.timer = setTimeout(
+      () => this.emailAfterDelay(),
+      this.WAIT_TIMER_IN_MS
+    );
   }
 
   usernameImmediately() {
@@ -75,6 +93,34 @@ export default class RegistrationForm {
             this.username.isUnique = false;
           } else {
             this.username.isUnique = true;
+          }
+        })
+        .catch(err => console.log(err));
+    }
+  }
+
+  emailAfterDelay() {
+    // valid data
+    if (!/^\S+@\S+$/.test(this.email.value)) {
+      this.showValidationError(
+        this.email,
+        'You must provide a valid email address'
+      );
+    }
+    // check if email is already used
+    if (!this.email.errors) {
+      axios
+        .post('/doesEmailExist', { email: this.email.value })
+        .then(response => {
+          if (response.data) {
+            this.email.isUnique = false;
+            this.showValidationError(
+              this.email,
+              'That email is already beeing used'
+            );
+          } else {
+            this.email.isUnique = true;
+            this.hideValidationError(this.email);
           }
         })
         .catch(err => console.log(err));
