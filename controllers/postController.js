@@ -1,7 +1,7 @@
 const Post = require('../models/Post');
 
 exports.viewCreateScreen = (req, res) => {
-  res.render('create-post');
+  res.render('create-post', { title: 'Create new post' });
 };
 
 exports.create = (req, res) => {
@@ -26,7 +26,7 @@ exports.viewSingle = async (req, res) => {
       title: post.title
     });
   } catch (error) {
-    res.render('404');
+    res.render('404', { title: 'ERROR' });
   }
 };
 
@@ -34,14 +34,14 @@ exports.viewEditScreen = async (req, res) => {
   try {
     const post = await Post.findSingleById(req.params.id, req.visitorId);
     if (post.isVisitorOwner) {
-      res.render('edit-post', { post: post });
+      res.render('edit-post', { post: post, title: `Edit ${post.title}` });
     } else {
       req.flash('errors', 'You are not permitted to perform that action');
       req.session.save(callback => res.redirect('/'));
     }
   } catch (error) {
     console.log('ERROR in view EditScreen: ', error);
-    res.render(404);
+    res.render('404', { title: 'ERROR' });
   }
 };
 
