@@ -1,3 +1,4 @@
+import axios from 'axios';
 export default class RegistrationForm {
   constructor() {
     this.allFields = document.querySelectorAll(
@@ -62,6 +63,21 @@ export default class RegistrationForm {
         this.username,
         'Username must be at least 3 characters'
       );
+    }
+
+    // check if username already exist
+    if (!this.username.errors) {
+      axios
+        .post('/doesUsernameExist', { username: this.username.value })
+        .then(response => {
+          if (response.data) {
+            this.showValidationError(this.username, 'Username already exists');
+            this.username.isUnique = false;
+          } else {
+            this.username.isUnique = true;
+          }
+        })
+        .catch(err => console.log(err));
     }
   }
 
