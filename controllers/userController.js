@@ -96,11 +96,15 @@ exports.register = (req, res) => {
 exports.home = async (req, res) => {
   if (req.session.user) {
     const posts = await Post.getFeed(req.session.user._id);
-    res.render('home-dashboard', { posts: posts });
+    res.render('home-dashboard', {
+      posts: posts,
+      title: `Home ${req.session.user.username}`
+    });
   } else {
     // display error message and clear it from db-cookie
     res.render('home-guest', {
-      regErrors: req.flash('regErrors')
+      regErrors: req.flash('regErrors'),
+      title: 'Home Guest'
     });
   }
 };
@@ -113,7 +117,7 @@ exports.ifUserExists = function(req, res, next) {
     })
     .catch(err => {
       console.log(err);
-      res.render('404');
+      res.render('404', { title: 'ERROR' });
     });
 };
 
@@ -123,6 +127,7 @@ exports.profilePostsScreen = function(req, res) {
     .then(posts => {
       // expose only the needed properties
       res.render('profile', {
+        title: `Profile Posts for ${req.profileUser.username}`,
         currentPage: 'posts',
         posts: posts,
         profileUsername: req.profileUser.username,
@@ -138,7 +143,7 @@ exports.profilePostsScreen = function(req, res) {
     })
     .catch(err => {
       console.log(err);
-      res.render('404');
+      res.render('404', { title: 'ERROR' });
     });
 };
 
@@ -146,6 +151,7 @@ exports.profileFollowersScreen = async function(req, res) {
   try {
     const followers = await Follow.getFollowersById(req.profileUser._id);
     res.render('profile-followers', {
+      title: `Profile Follower for ${req.profileUser.username}`,
       currentPage: 'followers',
       followers: followers,
       profileUsername: req.profileUser.username,
@@ -160,7 +166,7 @@ exports.profileFollowersScreen = async function(req, res) {
     });
   } catch (err) {
     console.log(err);
-    res.render('404');
+    res.render('404', { title: 'ERROR' });
   }
 };
 
@@ -168,6 +174,7 @@ exports.profileFollowingScreen = async function(req, res) {
   try {
     const following = await Follow.getFollowingById(req.profileUser._id);
     res.render('profile-following', {
+      title: `Profile Following for ${req.profileUser.username}`,
       currentPage: 'following',
       following: following,
       profileUsername: req.profileUser.username,
@@ -182,6 +189,6 @@ exports.profileFollowingScreen = async function(req, res) {
     });
   } catch (err) {
     console.log(err);
-    res.render('404');
+    res.render('404', { title: 'ERROR' });
   }
 };
