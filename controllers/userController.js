@@ -123,6 +123,7 @@ exports.profilePostsScreen = function(req, res) {
     .then(posts => {
       // expose only the needed properties
       res.render('profile', {
+        title: `Profile for ${req.profileUser.username}`,
         currentPage: 'posts',
         posts: posts,
         profileUsername: req.profileUser.username,
