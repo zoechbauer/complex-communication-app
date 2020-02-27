@@ -78,6 +78,20 @@ exports.login = function(req, res) {
     });
 };
 
+exports.apiLogin = function(req, res) {
+  let user = new User(req.body);
+  console.log(req.body, user);
+  user
+    .login()
+    .then(result => {
+      res.json('logged in successfully');
+    })
+    .catch(err => {
+      console.log(err);
+      res.json('sorry, wrong username or password');
+    });
+};
+
 exports.logout = function(req, res) {
   // delete session cookie in database
   req.session.destroy(callback => {
