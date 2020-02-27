@@ -2,6 +2,7 @@ import axios from 'axios';
 export default class RegistrationForm {
   constructor() {
     this.WAIT_TIMER_IN_MS = 800;
+    this.MIN_PASSWORD_LENGTH = 4; // for testing
     this.allFields = document.querySelectorAll(
       '#registration-form .form-control'
     );
@@ -10,6 +11,8 @@ export default class RegistrationForm {
     this.username.previousValue = '';
     this.email = document.querySelector('#email-register');
     this.email.previousValue = '';
+    this.password = document.querySelector('#password-register');
+    this.password.previousValue = '';
     this.events();
   }
 
@@ -20,6 +23,9 @@ export default class RegistrationForm {
     });
     this.email.addEventListener('keyup', () => {
       this.isDifferent(this.email, this.emailHandler);
+    });
+    this.password.addEventListener('keyup', () => {
+      this.isDifferent(this.password, this.passwordHandler);
     });
   }
 
@@ -48,6 +54,38 @@ export default class RegistrationForm {
       () => this.emailAfterDelay(),
       this.WAIT_TIMER_IN_MS
     );
+  }
+
+  passwordHandler() {
+    this.password.errors = false;
+    this.passwordImmediately();
+    clearTimeout(this.username.timer);
+    this.password.timer = setTimeout(
+      () => this.passwordAfterDelay(),
+      this.WAIT_TIMER_IN_MS
+    );
+  }
+
+  passwordImmediately() {
+    if (this.password.value.length > 50) {
+      this.showValidationError(
+        this.password,
+        'Password cannot not exceed 50 characters'
+      );
+    }
+
+    if (!this.password.errors) {
+      this.hideValidationError(this.password);
+    }
+  }
+
+  passwordAfterDelay() {
+    if (this.password.value.length < this.MIN_PASSWORD_LENGTH) {
+      this.showValidationError(
+        this.password,
+        `Password must be at least ${this.MIN_PASSWORD_LENGTH} characters`
+      );
+    }
   }
 
   usernameImmediately() {
