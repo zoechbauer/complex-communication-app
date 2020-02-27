@@ -7,6 +7,7 @@ export default class Search {
     this.WAIT_TIMER_IN_SECONDS = 0.7;
 
     this.injectHTML();
+    this._csrf = document.querySelector('[name="_csrf"]').value;
     this.headerSearchIcon = document.querySelector('.header-search-icon');
     this.searchOverlay = document.querySelector('.search-overlay');
     this.closeIcon = document.querySelector('.close-live-search');
@@ -54,7 +55,7 @@ export default class Search {
   sendRequest() {
     console.log(this.inputField.value);
     axios
-      .post('/search', { searchTerm: this.inputField.value })
+      .post('/search', { _csrf: this._csrf, searchTerm: this.inputField.value })
       .then(response => {
         console.log(response.data);
         this.renderResultsHTML(response.data);
