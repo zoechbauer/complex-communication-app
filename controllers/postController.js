@@ -18,6 +18,19 @@ exports.create = (req, res) => {
     });
 };
 
+exports.apiCreate = (req, res) => {
+  let post = new Post(req.body, req.apiUser._id);
+  post
+    .create()
+    .then(newId => {
+      res.json('The new post has been created');
+    })
+    .catch(errors => {
+      console.log('ERR in apiCreate', errors);
+      res.json(errors);
+    });
+};
+
 exports.viewSingle = async (req, res) => {
   try {
     let post = await Post.findSingleById(req.params.id, req.visitorId);
@@ -89,6 +102,17 @@ exports.delete = function(req, res) {
       req.flash('errors', 'You have no permission to perform that action');
       req.session.save(callback => res.redirect('/'));
       console.log('ERROR on delete post: ' + err);
+    });
+};
+
+exports.apiDelete = function(req, res) {
+  Post.delete(req.params.id, req.apiUser._id)
+    .then(() => {
+      res.json('Post successfully deleted');
+    })
+    .catch(errors => {
+      console.log(errors);
+      res.json('You do not have permission to perform that action');
     });
 };
 

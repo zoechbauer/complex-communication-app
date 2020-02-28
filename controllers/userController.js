@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Post = require('../models/Post');
 const Follow = require('../models/Follow');
+const jwt = require('jsonwebtoken');
 
 exports.sharedProfileData = async function(req, res, next) {
   let isFollowing = false;
@@ -45,6 +46,15 @@ exports.doesEmailExist = async function(req, res) {
   res.json(emailBool);
 };
 
+exports.apiMustBeLoggedIn = (req, res, next) => {
+  try {
+    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET);
+    next();
+  } catch (error) {
+    res.json('Sorry, you must provide a valid token');
+  }
+};
+
 exports.mustBeLoggedIn = (req, res, next) => {
   if (req.session.user) {
     next();
@@ -75,6 +85,24 @@ exports.login = function(req, res) {
       // store error msg in session cookie in db
       req.flash(err);
       res.redirect('/');
+    });
+};
+
+exports.apiLogin = function(req, res) {
+  let user = new User(req.body);
+  user
+    .login()
+    .then(result => {
+      console.log('user.data', user.data);
+      res.json(
+        jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, {
+          expiresIn: '7d'
+        })
+      );
+    })
+    .catch(err => {
+      console.log(err);
+      res.json('sorry, wrong username or password');
     });
 };
 
@@ -201,5 +229,16 @@ exports.profileFollowingScreen = async function(req, res) {
   } catch (err) {
     console.log(err);
     res.render('404', { title: 'ERROR' });
+  }
+};
+
+exports.apiGetPostsByUsername = async (req, res) => {
+  try {
+    const authorDoc = await User.findByUsername(req.params.username);
+    const posts = await Post.findByAuthorId(authorDoc._id);
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+    res.json('Sorry, this username does not exist');
   }
 };
