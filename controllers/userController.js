@@ -231,3 +231,14 @@ exports.profileFollowingScreen = async function(req, res) {
     res.render('404', { title: 'ERROR' });
   }
 };
+
+exports.apiGetPostsByUsername = async (req, res) => {
+  try {
+    const authorDoc = await User.findByUsername(req.params.username);
+    const posts = await Post.findByAuthorId(authorDoc._id);
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+    res.json('Sorry, this username does not exist');
+  }
+};
