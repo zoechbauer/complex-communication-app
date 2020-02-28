@@ -2,6 +2,8 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 const Follow = require('../models/Follow');
 const jwt = require('jsonwebtoken');
+const sendGrid = require('@sendgrid/mail');
+sendGrid.setApiKey(process.env.SENDGRIDAPIKEY);
 
 exports.sharedProfileData = async function(req, res, next) {
   let isFollowing = false;
@@ -119,6 +121,17 @@ exports.register = (req, res) => {
   user
     .register()
     .then(() => {
+      try {
+        sendGrid.send({
+          to: `${process.env.EMAILTO}`,
+          from: 'noreply@complexapp.com',
+          subject: 'New registration',
+          text: `The user ${user.data.username} ( ${user.data.email} ) has registered to OurApp (complex-app-heroku)`,
+          html: `The user <strong>${user.data.username}</strong> ( ${user.data.email} ) has registered to OurApp (complex-app-heroku).`
+        });
+      } catch (error) {
+        console.log('ERR register/email', error);
+      }
       req.session.user = {
         username: user.data.username,
         avatar: user.avatar,
@@ -127,6 +140,7 @@ exports.register = (req, res) => {
       req.session.save(callback => res.redirect('/'));
     })
     .catch(errors => {
+      console.log('register - errors', errors);
       errors.forEach(error => req.flash('regErrors', error));
       req.session.save(callback => res.redirect('/'));
     });
