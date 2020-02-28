@@ -18,6 +18,19 @@ exports.create = (req, res) => {
     });
 };
 
+exports.apiCreate = (req, res) => {
+  let post = new Post(req.body, req.apiUser._id);
+  post
+    .create()
+    .then(newId => {
+      res.json('The new post has been created');
+    })
+    .catch(errors => {
+      console.log('ERR in apiCreate', errors);
+      res.json(errors);
+    });
+};
+
 exports.viewSingle = async (req, res) => {
   try {
     let post = await Post.findSingleById(req.params.id, req.visitorId);

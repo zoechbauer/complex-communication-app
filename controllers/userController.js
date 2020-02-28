@@ -46,6 +46,15 @@ exports.doesEmailExist = async function(req, res) {
   res.json(emailBool);
 };
 
+exports.apiMustBeLoggedIn = (req, res, next) => {
+  try {
+    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET);
+    next();
+  } catch (error) {
+    res.json('Sorry, you must provide a valid token');
+  }
+};
+
 exports.mustBeLoggedIn = (req, res, next) => {
   if (req.session.user) {
     next();
