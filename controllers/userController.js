@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Post = require('../models/Post');
 const Follow = require('../models/Follow');
+const jwt = require('jsonwebtoken');
 
 exports.sharedProfileData = async function(req, res, next) {
   let isFollowing = false;
@@ -80,11 +81,15 @@ exports.login = function(req, res) {
 
 exports.apiLogin = function(req, res) {
   let user = new User(req.body);
-  console.log(req.body, user);
   user
     .login()
     .then(result => {
-      res.json('logged in successfully');
+      console.log('user.data', user.data);
+      res.json(
+        jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, {
+          expiresIn: '7d'
+        })
+      );
     })
     .catch(err => {
       console.log(err);
